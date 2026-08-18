@@ -1,5 +1,6 @@
 #ifndef SPECIALRELATIVITYSANDBOX_VECTOR_MATRIX_H
 #define SPECIALRELATIVITYSANDBOX_VECTOR_MATRIX_H
+#include <cmath>
 
 template<int n>
 class Vector {
@@ -23,7 +24,7 @@ public:
         return &contents[n];
     }
 
-    double operator[](const int i) const {
+    const double &operator[](const int i) const {
         return contents[i];
     }
 
@@ -51,10 +52,34 @@ public:
         return other -= *this;
     }
 
-    double operator*(const Vector &other) const {
+    double operator*(const double other[n]) const {
         double result = 0.0;
-        for (int i = 0; i < n; i++) result += contents[i] * other.contents[i];
+        for (int i = 0; i < n; i++) result += contents[i] * other[i];
         return result;
+    }
+
+    double operator*(const Vector &other) const {
+        return *this * other.contents;
+    }
+
+    [[nodiscard]] double magnitude2() const {
+        double result = 0.0;
+        for (const double d : contents) result += d * d;
+        return result;
+    }
+
+    [[nodiscard]] double magnitude() const {
+        return std::sqrt(magnitude2());
+    }
+
+    Vector& operator*=(const double mult) {
+        for (double &d : contents) d *= mult;
+        return *this;
+    }
+
+    Vector& operator*(const double mult) const {
+        Vector result = *this;
+        return result *= mult;
     }
 };
 
@@ -72,38 +97,46 @@ std::ostream &operator<<(std::ostream &os, const Vector<n> &vec) {
 template<int rows, int cols>
 class Matrix {
     static constexpr int shape[2] = {rows, cols};
-    Vector<cols> contents[rows];
+    double contents[rows * cols];
+
+    double *operator[](const int row) {
+        return &contents[row * cols];
+    }
+
+    const double *operator[](const int row) const {
+        return &contents[row * cols];
+    }
 
 public:
     Matrix() : contents{} {
     }
 
-    Matrix(const Vector<cols> (&contents)[rows]) : contents{contents} {
+    Matrix(const double (&contents)[rows * cols]) : contents{contents} {
     }
 
     Matrix(const Matrix &other) = default;
 
     Matrix(Matrix &&other) = default;
 
-    [[nodiscard]] const Vector<cols> *begin() const {
+    [[nodiscard]] const double *begin() const {
         return contents;
     }
 
-    [[nodiscard]] const Vector<cols> *end() const {
-        return &contents[rows];
+    [[nodiscard]] const double *end() const {
+        return &contents[rows * cols];
     }
 
-    Vector<cols> operator[](const int i) const {
-        return contents[i];
+    double &get(const int row, const int col) {
+        return contents[row * cols + col];
     }
 
-    Vector<cols> &operator[](const int i) {
-        return contents[i];
+    [[nodiscard]] const double &get(const int row, const int col) const {
+        return contents[row * cols + col];
     }
 
     Vector<rows> operator*(const Vector<cols> &other) const {
         Vector<rows> new_vec;
-        for (int r = 0; r < rows; r++) new_vec[r] = contents[r] * other;
+        for (int r = 0; r < rows; r++) new_vec[r] = other * (*this)[r];
         return new_vec;
     }
 
@@ -112,19 +145,26 @@ public:
         Matrix<rows, cols2> new_mat;
         for (int r = 0; r < rows; r++)
             for (int c = 0; c < cols2; c++)
-                for (int i = 0; i < cols; i++) new_mat[r][c] += (*this)[r][i] * other[i][c];
+                for (int i = 0; i < cols; i++) new_mat.get(r, c) += get(r, i) * other.get(i, c);
         return new_mat;
     }
 
     void setIdentity() {
         if (rows != cols) return;
-        for (int i = 0; i < rows; i++) contents[i][i] = 1.0;
+        for (int i = 0; i < rows; i++) get(i, i) = 1.0;
     }
 };
 
 template<int rows, int cols>
 std::ostream &operator<<(std::ostream &os, const Matrix<rows, cols> mat) {
-    for (const Vector<cols> &vec: mat) os << vec << '\n';
+    for (int r = 0; r < rows; r++) {
+        os << '[';
+        for (int c = 0; c < cols; c++) {
+            os << mat.get(r, c);
+            if (c != cols - 1) os << ", ";
+        }
+        os << "]\n";
+    }
     return os;
 }
 

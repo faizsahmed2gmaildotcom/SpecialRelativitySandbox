@@ -2,6 +2,9 @@
 #define SPECIALRELATIVITYSANDBOX_VECTOR_MATRIX_H
 #include <cmath>
 
+template<typename T, typename... Args>
+concept ArgsType = (std::same_as<Args, T> and ...);
+
 template<int n>
 class Vector {
     static constexpr int size = n;
@@ -9,6 +12,11 @@ class Vector {
 
 public:
     Vector() : contents{} {
+    }
+
+    template<typename... Args>
+        requires ArgsType<double, Args...>
+    Vector(Args... args) : contents{args...} {
     }
 
     Vector(const double contents[n]) : contents{contents} {
@@ -64,7 +72,7 @@ public:
 
     [[nodiscard]] double magnitude2() const {
         double result = 0.0;
-        for (const double d : contents) result += d * d;
+        for (const double d: contents) result += d * d;
         return result;
     }
 
@@ -72,12 +80,12 @@ public:
         return std::sqrt(magnitude2());
     }
 
-    Vector& operator*=(const double mult) {
-        for (double &d : contents) d *= mult;
+    Vector &operator*=(const double mult) {
+        for (double &d: contents) d *= mult;
         return *this;
     }
 
-    Vector& operator*(const double mult) const {
+    Vector &operator*(const double mult) const {
         Vector result = *this;
         return result *= mult;
     }
@@ -109,6 +117,11 @@ class Matrix {
 
 public:
     Matrix() : contents{} {
+    }
+
+    template<typename... Args>
+        requires ArgsType<double, Args...>
+    Matrix(Args... args) : contents{args...} {
     }
 
     Matrix(const double (&contents)[rows * cols]) : contents{contents} {

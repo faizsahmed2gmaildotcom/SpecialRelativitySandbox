@@ -1,11 +1,13 @@
-#ifndef SPECIALRELATIVITYSANDBOX_VECTOR_MATRIX_H
-#define SPECIALRELATIVITYSANDBOX_VECTOR_MATRIX_H
+module; // Start of file
+#include <iostream>
 #include <cmath>
+#include <ranges>
+export module VecMat; // Start of export
 
 template<typename T, typename... Args>
 concept ArgsType = (std::same_as<Args, T> and ...);
 
-template<int n>
+export template<int n>
 class Vector {
     static constexpr int size = n;
     double contents[n];
@@ -85,24 +87,24 @@ public:
         return *this;
     }
 
-    Vector &operator*(const double mult) const {
+    Vector operator*(const double mult) const {
         Vector result = *this;
-        return result *= mult;
+        result *= mult;
+        return result;
     }
 };
 
-template<int n>
+export template<int n>
 std::ostream &operator<<(std::ostream &os, const Vector<n> &vec) {
     os << '[';
-    for (int i = 0; i < n; i++) {
-        os << vec[i];
-        if (i != n - 1) os << ", ";
+    for (const double d: vec | std::ranges::views::take(n - 1)) {
+        os << d << ", ";
     }
-    os << ']';
+    os << vec[n - 1] << ']';
     return os;
 }
 
-template<int rows, int cols>
+export template<int rows, int cols>
 class Matrix {
     static constexpr int shape[2] = {rows, cols};
     double contents[rows * cols];
@@ -168,7 +170,7 @@ public:
     }
 };
 
-template<int rows, int cols>
+export template<int rows, int cols>
 std::ostream &operator<<(std::ostream &os, const Matrix<rows, cols> mat) {
     for (int r = 0; r < rows; r++) {
         os << '[';
@@ -180,5 +182,3 @@ std::ostream &operator<<(std::ostream &os, const Matrix<rows, cols> mat) {
     }
     return os;
 }
-
-#endif

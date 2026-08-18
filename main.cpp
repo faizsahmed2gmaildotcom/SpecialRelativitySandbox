@@ -1,5 +1,5 @@
 #include <iostream>
-#include "vector_matrix.h"
+import VecMat;
 
 int main() {
     Matrix<3, 5> test_mat{.1, .2, .3, .4, .5};

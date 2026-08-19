@@ -7,38 +7,38 @@
 template<typename T, typename... Args>
 concept ArgsType = (std::same_as<Args, T> and ...);
 
-template<int n>
+template<typename T, int n>
 class Vector {
-    static constexpr int size = n;
-    double contents[n];
+    T contents[n];
 
 public:
     Vector() : contents{} {
     }
 
     template<typename... Args>
-        requires ArgsType<double, Args...>
+        requires ArgsType<T, Args...>
     Vector(Args... args) : contents{args...} {
     }
 
-    Vector(const double contents[n]) : contents{contents} {
+    Vector(const T contents[n]) {
+        for (int i = 0; i < n; i++) this->contents[i] = contents[i];
     }
 
     Vector(const Vector &other) = default;
 
-    [[nodiscard]] const double *begin() const {
+    [[nodiscard]] const T *begin() const {
         return contents;
     }
 
-    [[nodiscard]] const double *end() const {
+    [[nodiscard]] const T *end() const {
         return &contents[n];
     }
 
-    const double &operator[](const int i) const {
+    const T &operator[](const int i) const {
         return contents[i];
     }
 
-    double &operator[](const int i) {
+    T &operator[](const int i) {
         return contents[i];
     }
 
@@ -48,8 +48,8 @@ public:
     }
 
     Vector operator+(const Vector &other) const {
-        Vector new_vec = other;
-        return other += *this;
+        Vector result = other;
+        return result += *this;
     }
 
     Vector &operator-=(const Vector &other) {
@@ -57,45 +57,45 @@ public:
         return *this;
     }
 
-    Vector operator-(const Vector &other) {
-        Vector new_vec = other;
-        return other -= *this;
+    Vector operator-(const Vector &other) const {
+        Vector result = other;
+        return result -= *this;
     }
 
-    double operator*(const double other[n]) const {
-        double result = 0.0;
-        for (int i = 0; i < n; i++) result += contents[i] * other[i];
+    T operator*(const Vector &other) const {
+        T result;
+        for (int i = 0; i < n; i++) result += (*this)[i] * other[i];
         return result;
     }
 
-    double operator*(const Vector &other) const {
-        return *this * other.contents;
-    }
-
-    [[nodiscard]] double magnitude2() const {
-        double result = 0.0;
-        for (const double d: contents) result += d * d;
-        return result;
-    }
-
-    [[nodiscard]] double magnitude() const {
-        return std::sqrt(magnitude2());
-    }
-
-    Vector &operator*=(const double mult) {
-        for (double &d: contents) d *= mult;
+    Vector &operator*=(const T mult) {
+        for (T &d: contents) d *= mult;
         return *this;
     }
 
-    Vector operator*(const double mult) const {
+    Vector operator*(const T mult) const {
         Vector result = *this;
-        result *= mult;
+        return result *= mult;
+    }
+
+    [[nodiscard]] T magnitude2() const {
+        T result = 0.0;
+        for (const T d: contents) result += d * d;
         return result;
+    }
+
+    [[nodiscard]] T magnitude() const {
+        return std::sqrt(magnitude2());
+    }
+
+    [[nodiscard]] Vector normalize() const {
+        if (const T mag = magnitude(); mag == 0.0) return *this;
+        return *this * (1.0 / magnitude());
     }
 };
 
-template<int n>
-std::ostream &operator<<(std::ostream &os, const Vector<n> &vec) {
+template<typename T, int n>
+std::ostream &operator<<(std::ostream &os, const Vector<T, n> &vec) {
     os << '[';
     for (const double d: vec | std::ranges::views::take(n - 1)) {
         os << d << ", ";
@@ -106,27 +106,13 @@ std::ostream &operator<<(std::ostream &os, const Vector<n> &vec) {
 
 template<int rows, int cols>
 class Matrix {
-    static constexpr int shape[2] = {rows, cols};
-    double contents[rows * cols];
-
-    double *operator[](const int row) {
-        return &contents[row * cols];
-    }
-
-    const double *operator[](const int row) const {
-        return &contents[row * cols];
-    }
+    Vector<Vector<double, cols>, rows> contents;
 
 public:
     Matrix() : contents{} {
     }
 
-    template<typename... Args>
-        requires ArgsType<double, Args...>
-    Matrix(Args... args) : contents{args...} {
-    }
-
-    Matrix(const double (&contents)[rows * cols]) : contents{contents} {
+    Matrix(const Vector<Vector<double, cols>, rows> &contents) : contents{contents} {
     }
 
     Matrix(const Matrix &other) = default;
@@ -134,25 +120,25 @@ public:
     Matrix(Matrix &&other) = default;
 
     [[nodiscard]] const double *begin() const {
-        return contents;
+        return contents[0].begin();
     }
 
     [[nodiscard]] const double *end() const {
-        return &contents[rows * cols];
+        return contents[rows - 1].end();
     }
 
-    double &get(const int row, const int col) {
-        return contents[row * cols + col];
+    Vector<double, rows> operator*(const Vector<double, cols> &other) const {
+        Vector<double, rows> result;
+        for (int r = 0; r < rows; r++) result[r] = contents[r] * other;
+        return result;
     }
 
-    [[nodiscard]] const double &get(const int row, const int col) const {
-        return contents[row * cols + col];
+    double *operator[](const int row) {
+        return &contents[row * cols];
     }
 
-    Vector<rows> operator*(const Vector<cols> &other) const {
-        Vector<rows> new_vec;
-        for (int r = 0; r < rows; r++) new_vec[r] = other * (*this)[r];
-        return new_vec;
+    const double *operator[](const int row) const {
+        return &contents[row * cols];
     }
 
     template<int cols2>

@@ -3,44 +3,45 @@
 #include "vector_matrix.h"
 #include "relativity.h"
 
-struct RefFrame {
-    Vector<3> pos;
-    Vector<3> vel;
-    Vector<3> acc;
-};
-
 template<int vts>
 class BaseObj {
-    RefFrame frame;
+    Vector<VtxRefFrame, vts> vtx_frames;
+    const Matrix<vts, 3> vertices;
     Matrix<vts, 3> world_vertices;
-    Matrix<vts, 3> cam_vertices; // Lorentz-transformed result of origin+world_vertices
+    Matrix<vts, 3> cam_vertices; // Lorentz-transformed result of pos+vertices
 
-    void relUpdateFrame(const double dt) {
-        const Vector v_rel = frame.vel * LF(frame.vel);
-        const Vector v_new = v_rel + frame.acc * dt;
-        frame.vel = v_new * (1.0 / std::sqrt(1 + v_new.magnitude2() / C2));
-        frame.pos += frame.vel * dt;
+    void updateWorldVtc(const double dt, const int vtx) {
+        const Vector v_rel = vtx_frames[vtx].vel * LF(vtx_frames[vtx].vel);
+        const Vector v_new = v_rel + vtx_frames[vtx].acc * dt;
+        vtx_frames[vtx].vel = v_new * (1.0 / std::sqrt(1 + v_new.magnitude2() / C2));
+        for (int xyz = 0; xyz < 3; xyz++) world_vertices.get(vtx, xyz) += vtx_frames[vtx].vel[xyz] * dt;
     }
 
-    void relUpdateVertex(const double dt, const RefFrame &cam) {
-        const Vector beta = cam.vel * (1.0 / C2);
-        for (int v = 0; v < vts; v++) {
+    void updateCamVtc() {
 
-        }
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const BaseObj &obj) {
+        os << "Vertices (world):\n" << obj.world_vertices << '\n';
+        os << "Vertices (camera):\n" << obj.cam_vertices << '\n';
+        return os;
     }
 
 public:
-    BaseObj() = default;
+    explicit BaseObj(const Matrix<vts, 3> &vertices) : vertices(vertices), world_vertices(vertices) {
+    }
 
     virtual ~BaseObj() = default;
 
-    BaseObj(const Vector<3> &pos, const Matrix<vts, 3> &vertices, const Vector<3> &vel = {}, const Vector<3> &acc = {})
-        : frame(pos, vel, acc), world_vertices(vertices) {
-    }
-
     // Runs every frame
     void process(const double dt) {
-        relUpdateFrame(dt);
+        updateWorldVtc(dt);
+    }
+
+    void offset(const Vector<double, 3> &dx) {
+        for (int v = 0; v < vts; v++)
+            for (int xyz = 0; xyz < 3; xyz++)
+                world_vertices.get(v, xyz) += dx[xyz];
     }
 };
 

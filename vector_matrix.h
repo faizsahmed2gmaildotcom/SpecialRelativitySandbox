@@ -1,13 +1,13 @@
-module; // Start of file
+#ifndef VECTOR_MATRIX
+#define VECTOR_MATRIX
 #include <iostream>
 #include <cmath>
 #include <ranges>
-export module VecMat; // Start of export
 
 template<typename T, typename... Args>
 concept ArgsType = (std::same_as<Args, T> and ...);
 
-export template<int n>
+template<int n>
 class Vector {
     static constexpr int size = n;
     double contents[n];
@@ -47,7 +47,7 @@ public:
         return *this;
     }
 
-    Vector operator+(const Vector &other) {
+    Vector operator+(const Vector &other) const {
         Vector new_vec = other;
         return other += *this;
     }
@@ -94,7 +94,7 @@ public:
     }
 };
 
-export template<int n>
+template<int n>
 std::ostream &operator<<(std::ostream &os, const Vector<n> &vec) {
     os << '[';
     for (const double d: vec | std::ranges::views::take(n - 1)) {
@@ -104,7 +104,7 @@ std::ostream &operator<<(std::ostream &os, const Vector<n> &vec) {
     return os;
 }
 
-export template<int rows, int cols>
+template<int rows, int cols>
 class Matrix {
     static constexpr int shape[2] = {rows, cols};
     double contents[rows * cols];
@@ -170,7 +170,7 @@ public:
     }
 };
 
-export template<int rows, int cols>
+template<int rows, int cols>
 std::ostream &operator<<(std::ostream &os, const Matrix<rows, cols> mat) {
     for (int r = 0; r < rows; r++) {
         os << '[';
@@ -182,3 +182,5 @@ std::ostream &operator<<(std::ostream &os, const Matrix<rows, cols> mat) {
     }
     return os;
 }
+
+#endif

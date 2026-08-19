@@ -1,5 +1,6 @@
 #include <iostream>
-import VecMat;
+#include "vector_matrix.h"
+#include "objects.h"
 
 int main() {
     Matrix<3, 5> test_mat{.1, .2, .3, .4, .5};

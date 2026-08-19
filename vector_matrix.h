@@ -48,8 +48,8 @@ public:
     }
 
     Vector operator+(const Vector &other) const {
-        Vector result = other;
-        return result += *this;
+        Vector result = *this;
+        return result += other;
     }
 
     Vector &operator-=(const Vector &other) {
@@ -58,12 +58,12 @@ public:
     }
 
     Vector operator-(const Vector &other) const {
-        Vector result = other;
-        return result -= *this;
+        Vector result = *this;
+        return result -= other;
     }
 
     T operator*(const Vector &other) const {
-        T result;
+        T result{};
         for (int i = 0; i < n; i++) result += (*this)[i] * other[i];
         return result;
     }
@@ -79,7 +79,7 @@ public:
     }
 
     [[nodiscard]] T magnitude2() const {
-        T result = 0.0;
+        T result{};
         for (const T d: contents) result += d * d;
         return result;
     }
@@ -89,8 +89,9 @@ public:
     }
 
     [[nodiscard]] Vector normalize() const {
-        if (const T mag = magnitude(); mag == 0.0) return *this;
-        return *this * (1.0 / magnitude());
+        const T mag = magnitude();
+        if (mag == 0.0) return *this;
+        return *this * (1.0 / mag);
     }
 };
 
@@ -119,12 +120,12 @@ public:
 
     Matrix(Matrix &&other) = default;
 
-    [[nodiscard]] const double *begin() const {
-        return contents[0].begin();
+    [[nodiscard]] const Vector<double, cols> *begin() const {
+        return contents;
     }
 
-    [[nodiscard]] const double *end() const {
-        return contents[rows - 1].end();
+    [[nodiscard]] const Vector<double, cols> *end() const {
+        return &contents[rows - 1];
     }
 
     Vector<double, rows> operator*(const Vector<double, cols> &other) const {
@@ -133,12 +134,12 @@ public:
         return result;
     }
 
-    double *operator[](const int row) {
-        return &contents[row * cols];
+    Vector<double, cols> &operator[](const int row) {
+        return contents[row];
     }
 
-    const double *operator[](const int row) const {
-        return &contents[row * cols];
+    const Vector<double, cols> &operator[](const int row) const {
+        return contents[row];
     }
 
     template<int cols2>
@@ -146,13 +147,13 @@ public:
         Matrix<rows, cols2> new_mat;
         for (int r = 0; r < rows; r++)
             for (int c = 0; c < cols2; c++)
-                for (int i = 0; i < cols; i++) new_mat.get(r, c) += get(r, i) * other.get(i, c);
+                for (int i = 0; i < cols; i++) new_mat[r][c] += (*this)[r][i] * other[i][c];
         return new_mat;
     }
 
     void setIdentity() {
         if (rows != cols) return;
-        for (int i = 0; i < rows; i++) get(i, i) = 1.0;
+        for (int i = 0; i < rows; i++) (*this)[i][i] = 1.0;
     }
 };
 
@@ -161,7 +162,7 @@ std::ostream &operator<<(std::ostream &os, const Matrix<rows, cols> mat) {
     for (int r = 0; r < rows; r++) {
         os << '[';
         for (int c = 0; c < cols; c++) {
-            os << mat.get(r, c);
+            os << mat[r][c];
             if (c != cols - 1) os << ", ";
         }
         os << "]\n";

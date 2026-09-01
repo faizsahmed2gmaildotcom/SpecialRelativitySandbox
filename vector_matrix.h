@@ -24,7 +24,18 @@ public:
         for (int i = 0; i < n; i++) this->contents[i] = contents[i];
     }
 
-    Vector(const Vector &other) = default;
+    template<int n2>
+    Vector(const Vector<T, n2> &other) {
+        for (int i = 0; i < std::max(n, n2); i++) contents[i] = other.contents[i];
+    }
+
+    [[nodiscard]] T *begin() {
+        return contents;
+    }
+
+    [[nodiscard]] T *end() {
+        return &contents[n];
+    }
 
     [[nodiscard]] const T *begin() const {
         return contents;
@@ -49,7 +60,8 @@ public:
 
     Vector operator+(const Vector &other) const {
         Vector result = *this;
-        return result += other;
+        result += other;
+        return result;
     }
 
     Vector &operator-=(const Vector &other) {
@@ -59,7 +71,8 @@ public:
 
     Vector operator-(const Vector &other) const {
         Vector result = *this;
-        return result -= other;
+        result -= other;
+        return result;
     }
 
     T operator*(const Vector &other) const {
@@ -75,7 +88,14 @@ public:
 
     Vector operator*(const T mult) const {
         Vector result = *this;
-        return result *= mult;
+        result *= mult;
+        return result;
+    }
+
+    bool operator==(const Vector &other) const {
+        for (int i = 0; i < n; i++)
+            if ((*this)[i] != other[i]) return false;
+        return true;
     }
 
     [[nodiscard]] T magnitude2() const {
@@ -92,6 +112,12 @@ public:
         const T mag = magnitude();
         if (mag == 0.0) return *this;
         return *this * (1.0 / mag);
+    }
+
+    Vector interpolate(const Vector& other) const {
+        Vector new_vec = *this + other;
+        new_vec *= 1.0 / 2.0;
+        return new_vec;
     }
 };
 

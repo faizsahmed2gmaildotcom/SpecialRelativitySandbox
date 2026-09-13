@@ -1,10 +1,10 @@
 #ifndef SPECIALRELATIVITYSANDBOX_CONFIG_H
 #define SPECIALRELATIVITYSANDBOX_CONFIG_H
 #include <limits>
-#define MAX_PAST_TIME 100
+#define MAX_PAST_TIME 6000
 
-using vec3 = Vector<double, 3>;
-constexpr double C = 10.0; // 299792458.0;
+using vec3 = Array<double, 3>;
+constexpr double C = 10.0; //299792458.0;
 constexpr double C2 = C * C;
 constexpr double INVALID_VAL = std::numeric_limits<double>::infinity();
 const vec3 INVALID_VECTOR{INVALID_VAL, INVALID_VAL, INVALID_VAL};

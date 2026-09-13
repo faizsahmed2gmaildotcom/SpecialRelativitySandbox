@@ -56,7 +56,7 @@ public:
         return arr[r_idx];
     }
 
-    void setAll(const T& val) {
+    void setAll(const T &val) {
         for (int i = 0; i < len; i++) arr[i] = val;
     }
 
@@ -112,19 +112,33 @@ struct CamRefFrame : CMRefFrame {
     }
 };
 
+class BaseObj;
+
+struct WorldVtx {
+    vec3 pos{};
+    const BaseObj *owner{};
+
+    double &operator[](const int xyz) {
+        return pos[xyz];
+    }
+
+    double operator[](const int xyz) const {
+        return pos[xyz];
+    }
+};
 
 struct VtxRefFrame {
-    vec3 world_vel;
-    const vec3 *world_pos{nullptr};
+    vec3 vel;
+    WorldVtx *vtx{nullptr};
 
     void saveState() {
-        history.append({world_vel, *world_pos});
+        history.append({vel, vtx->pos});
     }
 
     [[nodiscard]] double tRet(const CamRefFrame &cam) const {
         // For accurate tRet, go through the circular array until (cam.pos - frame.pos)/c - t_ret*fps ~= 0
-        const vec3 dx = cam.pos - *world_pos;
-        const vec3 v_rel = cam.vel - world_vel;
+        const vec3 dx = cam.pos - vtx->pos;
+        const vec3 v_rel = cam.vel - vel;
 
         const double a = v_rel.magnitude2() - C2;
         const double b = 2.0 * (dx * v_rel);
@@ -172,7 +186,7 @@ struct VtxRefFrame {
     }
 
     void resetHistory() {
-        history.setAll({world_vel, *world_pos});
+        history.setAll({vel, vtx->pos});
     }
 
 private:

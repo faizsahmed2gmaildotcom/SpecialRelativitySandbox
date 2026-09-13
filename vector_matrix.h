@@ -8,24 +8,24 @@ template<typename T, typename... Args>
 concept ArgsType = (std::same_as<Args, T> and ...);
 
 template<typename T, int n>
-class Vector {
+class Array {
     T contents[n];
 
 public:
-    Vector() : contents{} {
+    Array() : contents{} {
     }
 
     template<typename... Args>
         requires ArgsType<T, Args...>
-    Vector(Args... args) : contents{args...} {
+    Array(Args... args) : contents{args...} {
     }
 
-    Vector(const T contents[n]) {
+    Array(const T contents[n]) {
         for (int i = 0; i < n; i++) this->contents[i] = contents[i];
     }
 
     template<int n2>
-    Vector(const Vector<T, n2> &other) {
+    Array(const Array<T, n2> &other) {
         for (int i = 0; i < std::max(n, n2); i++) contents[i] = other.contents[i];
     }
 
@@ -53,46 +53,46 @@ public:
         return contents[i];
     }
 
-    Vector &operator+=(const Vector &other) {
+    Array &operator+=(const Array &other) {
         for (int i = 0; i < n; i++) contents[i] += other.contents[i];
         return *this;
     }
 
-    Vector operator+(const Vector &other) const {
-        Vector result = *this;
+    Array operator+(const Array &other) const {
+        Array result = *this;
         result += other;
         return result;
     }
 
-    Vector &operator-=(const Vector &other) {
+    Array &operator-=(const Array &other) {
         for (int i = 0; i < n; i++) contents[i] -= other.contents[i];
         return *this;
     }
 
-    Vector operator-(const Vector &other) const {
-        Vector result = *this;
+    Array operator-(const Array &other) const {
+        Array result = *this;
         result -= other;
         return result;
     }
 
-    T operator*(const Vector &other) const {
+    T operator*(const Array &other) const {
         T result{};
         for (int i = 0; i < n; i++) result += (*this)[i] * other[i];
         return result;
     }
 
-    Vector &operator*=(const T mult) {
+    Array &operator*=(const T mult) {
         for (T &d: contents) d *= mult;
         return *this;
     }
 
-    Vector operator*(const T mult) const {
-        Vector result = *this;
+    Array operator*(const T mult) const {
+        Array result = *this;
         result *= mult;
         return result;
     }
 
-    bool operator==(const Vector &other) const {
+    bool operator==(const Array &other) const {
         for (int i = 0; i < n; i++)
             if ((*this)[i] != other[i]) return false;
         return true;
@@ -108,21 +108,21 @@ public:
         return std::sqrt(magnitude2());
     }
 
-    [[nodiscard]] Vector normalize() const {
+    [[nodiscard]] Array normalize() const {
         const T mag = magnitude();
         if (mag == 0.0) return *this;
         return *this * (1.0 / mag);
     }
 
-    Vector interpolate(const Vector& other) const {
-        Vector new_vec = *this + other;
+    Array interpolate(const Array& other) const {
+        Array new_vec = *this + other;
         new_vec *= 1.0 / 2.0;
         return new_vec;
     }
 };
 
 template<typename T, int n>
-std::ostream &operator<<(std::ostream &os, const Vector<T, n> &vec) {
+std::ostream &operator<<(std::ostream &os, const Array<T, n> &vec) {
     os << '[';
     for (const double d: vec | std::ranges::views::take(n - 1)) {
         os << d << ", ";
@@ -133,38 +133,38 @@ std::ostream &operator<<(std::ostream &os, const Vector<T, n> &vec) {
 
 template<int rows, int cols>
 class Matrix {
-    Vector<Vector<double, cols>, rows> contents;
+    Array<Array<double, cols>, rows> contents;
 
 public:
     Matrix() : contents{} {
     }
 
-    Matrix(const Vector<Vector<double, cols>, rows> &contents) : contents{contents} {
+    Matrix(const Array<Array<double, cols>, rows> &contents) : contents{contents} {
     }
 
     Matrix(const Matrix &other) = default;
 
     Matrix(Matrix &&other) = default;
 
-    [[nodiscard]] const Vector<double, cols> *begin() const {
+    [[nodiscard]] const Array<double, cols> *begin() const {
         return contents;
     }
 
-    [[nodiscard]] const Vector<double, cols> *end() const {
+    [[nodiscard]] const Array<double, cols> *end() const {
         return &contents[rows - 1];
     }
 
-    Vector<double, rows> operator*(const Vector<double, cols> &other) const {
-        Vector<double, rows> result;
+    Array<double, rows> operator*(const Array<double, cols> &other) const {
+        Array<double, rows> result;
         for (int r = 0; r < rows; r++) result[r] = contents[r] * other;
         return result;
     }
 
-    Vector<double, cols> &operator[](const int row) {
+    Array<double, cols> &operator[](const int row) {
         return contents[row];
     }
 
-    const Vector<double, cols> &operator[](const int row) const {
+    const Array<double, cols> &operator[](const int row) const {
         return contents[row];
     }
 

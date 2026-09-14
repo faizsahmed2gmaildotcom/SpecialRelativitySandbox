@@ -114,30 +114,18 @@ struct CamRefFrame : CMRefFrame {
 
 class BaseObj;
 
-struct WorldVtx {
-    vec3 pos{};
+struct VtxRefFrame {
+    vec3 pos;
+    vec3 vel;
     const BaseObj *owner{};
 
-    double &operator[](const int xyz) {
-        return pos[xyz];
-    }
-
-    double operator[](const int xyz) const {
-        return pos[xyz];
-    }
-};
-
-struct VtxRefFrame {
-    vec3 vel;
-    WorldVtx *vtx{nullptr};
-
     void saveState() {
-        history.append({vel, vtx->pos});
+        history.append({vel, pos});
     }
 
     [[nodiscard]] double tRet(const CamRefFrame &cam) const {
         // For accurate tRet, go through the circular array until (cam.pos - frame.pos)/c - t_ret*fps ~= 0
-        const vec3 dx = cam.pos - vtx->pos;
+        const vec3 dx = cam.pos - pos;
         const vec3 v_rel = cam.vel - vel;
 
         const double a = v_rel.magnitude2() - C2;
@@ -178,7 +166,7 @@ struct VtxRefFrame {
     FrameState getState(const double t_ret) {
         const int lower_t = std::floor(t_ret * fps);
         const int upper_t = std::ceil(t_ret * fps);
-        std::cout << lower_t << " | " << upper_t << "\n";
+        // std::cout << lower_t << " | " << upper_t << "\n";
         if (lower_t < -MAX_PAST_TIME * fps) return INVALID_FRAME; // Outside view distance
         const vec3 state_pos = history[lower_t].pos.interpolate(history[upper_t].pos);
         const vec3 state_vel = history[lower_t].vel.interpolate(history[upper_t].vel);
@@ -186,7 +174,7 @@ struct VtxRefFrame {
     }
 
     void resetHistory() {
-        history.setAll({vel, vtx->pos});
+        history.setAll({vel, pos});
     }
 
 private:

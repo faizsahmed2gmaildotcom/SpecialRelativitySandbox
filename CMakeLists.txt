@@ -5,4 +5,6 @@ add_compile_options(-O3)  # Min. runtime speed
 set(CMAKE_CXX_STANDARD 26)
 
 add_executable(SpecialRelativitySandbox main.cpp objects.h relativity.h vector_matrix.h
-        config.h)
+        config.h
+        collision.h
+        debug_tools.h)

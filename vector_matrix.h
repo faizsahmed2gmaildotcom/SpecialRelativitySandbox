@@ -196,4 +196,6 @@ std::ostream &operator<<(std::ostream &os, const Matrix<rows, cols> mat) {
     return os;
 }
 
+
+
 #endif

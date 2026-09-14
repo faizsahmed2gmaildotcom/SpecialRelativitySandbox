@@ -13,9 +13,9 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec) {
 }
 
 inline void unpackGPU(const GlobalVertices &global_vtc) {
-    const double* start = &global_vtc.optical_vtc[0][0];
-    const double* end = start + global_vtc.optical_vtc.size() * 3;
-    for (const double* d = start; d < end; ++d) {
+    const float* start = &global_vtc.optical_vtc[0][0];
+    const float* end = start + global_vtc.optical_vtc.size() * 3;
+    for (const float* d = start; d < end; ++d) {
         std::cout << *d << '\n';
     }
 }

@@ -1,5 +1,7 @@
 #include <iostream>
 #include <chrono>
+#include <thread>
+
 #include "debug_tools.h"
 #include "vector_matrix.h"
 #include "objects.h"
@@ -28,6 +30,8 @@ int main() {
     double total_t = 0.0;
     int total_physics_frames = 0;
     auto cur_time = Clock::now();
+
+    const auto start_time = cur_time;
     while (total_t < 2.0) {
         if (total_t >= 1.0) cam.setVelocity({0.0, 0.0, 10.0});
 
@@ -42,10 +46,12 @@ int main() {
         total_t += dt;
         total_physics_frames++;
     }
+    const auto end_time = Clock::now();
 
     test_obj.printDat(global_vtc);
     std::cout << "Cam pos (world): " << cam.pos << '\n';
     std::cout << "Total time: " << total_t << "s\n";
+    std::cout << "Actual time: " << std::chrono::duration<double>(end_time - start_time) << "\n";
     std::cout << "Average PPS: " << total_physics_frames / total_t << '\n'; // Physics Per Second
 
     return 0;

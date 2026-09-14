@@ -24,9 +24,9 @@ public:
         for (int i = 0; i < n; i++) this->contents[i] = contents[i];
     }
 
-    template<int n2>
-    Array(const Array<T, n2> &other) {
-        for (int i = 0; i < std::max(n, n2); i++) contents[i] = other.contents[i];
+    template<typename T2, int n2>
+    Array(const Array<T2, n2> &other) {
+        for (int i = 0; i < std::min(n, n2); i++) contents[i] = other.contents[i];
     }
 
     [[nodiscard]] T *begin() {

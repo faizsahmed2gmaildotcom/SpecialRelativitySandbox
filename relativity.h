@@ -21,7 +21,7 @@ struct FrameState {
     vec3 vel;
     vec3 pos;
 
-    FrameState() : vel(INVALID_VECTOR), pos(INVALID_VECTOR) {
+    FrameState() : vel(INVALID_VEC3), pos(INVALID_VEC3) {
     }
 
     FrameState(const vec3 &vel, const vec3 &pos) : vel(vel), pos(pos) {
@@ -141,9 +141,9 @@ struct VtxRefFrame {
         return t_ret;
     }
 
-    vec3 getOptPos(const CamRefFrame &cam, const double t_ret) {
+    Array<float, 3> getOptPos(const CamRefFrame &cam, const double t_ret) {
         const vec3 x_emit = getState(t_ret).pos;
-        if (x_emit == INVALID_VECTOR) return INVALID_VECTOR;
+        if (x_emit == INVALID_VEC3) return INVALID_ARR3;
 
         // Lorentz boost the emission event into the camera rest frame
         const vec3 x_rel = x_emit - cam.pos;
@@ -160,7 +160,7 @@ struct VtxRefFrame {
             x_new = x_rel;
         }
 
-        return x_new;
+        return {static_cast<float>(x_new[0]), static_cast<float>(x_new[1]), static_cast<float>(x_new[2])};
     }
 
     FrameState getState(const double t_ret) {

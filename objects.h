@@ -4,7 +4,7 @@
 #include "relativity.h"
 
 struct GlobalVertices {
-    std::vector<vec3> optical_vtc;
+    std::vector<Array<float, 3>> optical_vtc;  // float instead of double for GPU
     std::vector<VtxRefFrame> world_vtc;
     std::vector<Array<unsigned int, 3> > triangle_indices;
 
@@ -42,8 +42,8 @@ protected:
 
     void updateWorldVtc(GlobalVertices &global_vtc) const {
         // Update world_vertices[vtx] based on main_frame attributes
-        for (int i = vtx_dat.alloc_vtc.first; i < vtx_dat.alloc_vtc.second; i++)
-            global_vtc.world_vtc[i].pos = main_frame.pos + vtx_dat.static_vtc[i];
+        for (auto v = vtx_dat.alloc_vtc.first; v < vtx_dat.alloc_vtc.second; v++)
+            global_vtc.world_vtc[v].pos = main_frame.pos + vtx_dat.static_vtc[v];
     }
 
 
@@ -54,7 +54,7 @@ public:
                      const range &alloc_tris,
                      std::vector<VtxRefFrame> &world_vertices)
         : vtx_dat(static_vertices, alloc_vtc, alloc_tris) {
-        for (unsigned int v = alloc_vtc.first; v < alloc_vtc.second; ++v)
+        for (auto v = alloc_vtc.first; v < alloc_vtc.second; ++v)
             world_vertices[v].owner = this;
     }
 
@@ -76,7 +76,7 @@ public:
         updateWorldVtc(global_vtc);
 
         if (time_since_last_frame != 0.0) return;
-        for (int v = vtx_dat.alloc_vtc.first; v < vtx_dat.alloc_vtc.second; ++v) {
+        for (auto v = vtx_dat.alloc_vtc.first; v < vtx_dat.alloc_vtc.second; ++v) {
             global_vtc.world_vtc[v].saveState();
             const double t_ret = global_vtc.world_vtc[v].tRet(cam);
             global_vtc.optical_vtc[v] = global_vtc.world_vtc[v].getOptPos(cam, t_ret);

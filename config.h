@@ -5,6 +5,7 @@
 // dtypes
 using vec3 = Array<double, 3>;
 using range = std::pair<unsigned int, unsigned int>;
+using tris = std::vector<Array<unsigned, 3> >;
 
 // invalid vals
 constexpr float INVALID_FLOAT = std::numeric_limits<float>::infinity();

@@ -117,6 +117,7 @@ class BaseObj;
 struct VtxRefFrame {
     vec3 pos;
     vec3 vel;
+    unsigned optical_idx = -1;
     const BaseObj *owner{};
 
     void saveState() {

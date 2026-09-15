@@ -12,7 +12,7 @@ using Clock = std::chrono::steady_clock;
 
 
 int main() {
-    GlobalVertices global_vtc;
+    GlobalVertices global_dat;
     CamRefFrame cam{{}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
     BaseObj test_obj{
         {
@@ -20,12 +20,13 @@ int main() {
             vec3{-10.0, -10.0, 0.0},
             vec3{10.0, -10.0, 0.0}
         },
-        global_vtc.allocVtc(3),
-        global_vtc.allocTris({0u, 1u, 2u}),
-        global_vtc.world_vtc
+        global_dat.allocVtc(3, tris({0u, 1u, 2u})),
+        global_dat.allocJoints(tris({0u, 1u, 2u})),
+        global_dat.allocCollTris(tris({0u, 1u, 2u})),
+        global_dat
     };
-    test_obj.offset({0.0, 0.0, 100.0}, global_vtc);
-    test_obj.resetHistory(global_vtc);
+    test_obj.offset({0.0, 0.0, 100.0}, global_dat);
+    test_obj.resetHistory(global_dat);
 
     double total_t = 0.0;
     int total_physics_frames = 0;
@@ -42,13 +43,13 @@ int main() {
         if (time_since_last_frame >= spf) time_since_last_frame = 0.0;
 
         cam.process(dt);
-        test_obj.process(dt, cam, global_vtc);
+        test_obj.process(dt, cam, global_dat);
         total_t += dt;
         total_physics_frames++;
     }
     const auto end_time = Clock::now();
 
-    test_obj.printDat(global_vtc);
+    test_obj.printDat(global_dat);
     std::cout << "Cam pos (world): " << cam.pos << '\n';
     std::cout << "Total time: " << total_t << "s\n";
     std::cout << "Actual time: " << std::chrono::duration<double>(end_time - start_time) << "\n";

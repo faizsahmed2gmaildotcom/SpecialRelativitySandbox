@@ -29,6 +29,12 @@ public:
         for (int i = 0; i < std::min(n, n2); i++) contents[i] = other.contents[i];
     }
 
+    template<typename T2, int n2>
+    Array(Array<T2, n2> &&other) {
+        contents = other.contents;
+        other.contents = nullptr;
+    }
+
     [[nodiscard]] T *begin() {
         return contents;
     }
@@ -114,7 +120,7 @@ public:
         return *this * (1.0 / mag);
     }
 
-    Array interpolate(const Array& other) const {
+    Array interpolate(const Array &other) const {
         Array new_vec = *this + other;
         new_vec *= 1.0 / 2.0;
         return new_vec;
@@ -195,7 +201,6 @@ std::ostream &operator<<(std::ostream &os, const Matrix<rows, cols> mat) {
     }
     return os;
 }
-
 
 
 #endif

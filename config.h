@@ -4,8 +4,49 @@
 
 // dtypes
 using vec3 = Array<double, 3>;
-using range = std::pair<unsigned int, unsigned int>;
 using tris = std::vector<Array<unsigned, 3> >;
+
+struct Range {
+private:
+    class Iter {
+        unsigned cur;
+
+    public:
+        Iter(const unsigned cur) : cur(cur) {
+        }
+
+        Iter &operator++() {
+            cur++;
+            return *this;
+        }
+
+        unsigned operator*() const {
+            return cur;
+        }
+
+        bool operator!=(const Iter &other) const {
+            return cur != other.cur;
+        }
+    };
+
+public:
+    const unsigned first;
+    const unsigned last;
+
+    Range(const unsigned first, const unsigned last) : first(first), last(last) {
+    }
+
+    Range(const size_t first, const size_t last) : first(first), last(last) {
+    }
+
+    [[nodiscard]] Iter begin() const {
+        return first;
+    }
+
+    [[nodiscard]] Iter end() const {
+        return last;
+    }
+};
 
 // invalid vals
 constexpr float INVALID_FLOAT = std::numeric_limits<float>::infinity();

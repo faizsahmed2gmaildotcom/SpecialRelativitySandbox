@@ -4,17 +4,17 @@
 #include <iostream>
 #include "config.h"
 
-inline double getLF(const vec3 &v) {
-    return 1.0 / std::sqrt(1 - v.magnitude2() / C2);
+inline float getLF(const vec3 &v) {
+    return 1.0f / std::sqrt(1 - v.magnitude2() / C2);
 }
 
-inline double betaLF(const vec3 &B) {
-    return 1.0 / std::sqrt(1 - B.magnitude2());
+inline float betaLF(const vec3 &B) {
+    return 1.0f / std::sqrt(1 - B.magnitude2());
 }
 
 inline vec3 betaRel(const vec3 &B_ref, const vec3 &B_obj) {
-    const double LF_ref = betaLF(B_ref);
-    return (B_obj * (1.0 / LF_ref) - B_ref + B_ref * (LF_ref / (LF_ref + 1) * (B_ref * B_obj))) * (1.0 / (1 - B_ref * B_obj));
+    const float LF_ref = betaLF(B_ref);
+    return (B_obj * (1.0f / LF_ref) - B_ref + B_ref * (LF_ref / (LF_ref + 1) * (B_ref * B_obj))) * (1.0f / (1 - B_ref * B_obj));
 }
 
 struct FrameState {
@@ -70,9 +70,9 @@ struct CMRefFrame {
     vec3 vel;
     vec3 pos;
     vec3 acc;
-    double theta{};
-    double phi{};
-    double omega{};
+    float theta{};
+    float phi{};
+    float omega{};
 
     CMRefFrame() = default;
 
@@ -83,10 +83,10 @@ struct CMRefFrame {
 
     virtual ~CMRefFrame() = default;
 
-    virtual void process(const double dt) {
+    virtual void process(const float dt) {
         p += acc * dt;
-        const double B2 = p.magnitude2() / C2;
-        vel = p * (1.0 / std::sqrt(1 + B2));
+        const float B2 = p.magnitude2() / C2;
+        vel = p * (1.0f / std::sqrt(1 + B2));
         pos += vel * dt;
     }
 
@@ -106,7 +106,7 @@ struct CamRefFrame : CMRefFrame {
     CamRefFrame(const vec3 &acc, const vec3 &vel, const vec3 &pos) : CMRefFrame(acc, vel, pos) {
     }
 
-    void process(const double dt) override {
+    void process(const float dt) override {
         CMRefFrame::process(dt);
         // pos += vel * dt * (getLF(vel) - 1.0); // Length contraction along motion
     }
@@ -124,51 +124,47 @@ struct VtxRefFrame {
         history.append({vel, pos});
     }
 
-    [[nodiscard]] double tRet(const CamRefFrame &cam) const {
+    [[nodiscard]] float tRet(const CamRefFrame &cam) const {
         // For accurate tRet, go through the circular array until (cam.pos - frame.pos)/c - t_ret*fps ~= 0
         const vec3 dx = cam.pos - pos;
         const vec3 v_rel = cam.vel - vel;
 
-        const double a = v_rel.magnitude2() - C2;
-        const double b = 2.0 * (dx * v_rel);
-        const double c = dx.magnitude2();
-        const double discriminant = b * b - 4.0 * a * c;
-        const double sqrt_disc = std::sqrt(discriminant);
+        const float a = v_rel.magnitude2() - C2;
+        const float b = 2.0f * (dx * v_rel);
+        const float c = dx.magnitude2();
+        const float discriminant = b * b - 4.0f * a * c;
+        const float sqrt_disc = std::sqrt(discriminant);
 
-        const double t1 = (-b + sqrt_disc) / (2.0 * a);
-        const double t2 = (-b - sqrt_disc) / (2.0 * a);
-        const double t_ret = t1 < 0.0 ? t1 : t2;
+        const float t1 = (-b + sqrt_disc) / (2.0f * a);
+        const float t2 = (-b - sqrt_disc) / (2.0f * a);
+        const float t_ret = t1 < 0.0f ? t1 : t2;
 
         return t_ret;
     }
 
-    Array<float, 3> getOptPos(const CamRefFrame &cam, const double t_ret) {
+    Array<float, 3> getOptPos(const CamRefFrame &cam, const float t_ret) {
         const vec3 x_emit = getState(t_ret).pos;
         if (x_emit == INVALID_VEC3) return INVALID_ARR3;
 
         // Lorentz boost the emission event into the camera rest frame
         const vec3 x_rel = x_emit - cam.pos;
         const vec3 V = cam.vel;
-        const double V2 = V.magnitude2();
+        const float V2 = V.magnitude2();
 
         vec3 x_new;
         if (V2 > 1e-12) {
-            const double LF_cam = getLF(cam.vel);
-            const double v_dot_x = V * x_rel;
-            const double scale = (LF_cam - 1.0) * v_dot_x / V2 - LF_cam * t_ret;
+            const float LF_cam = getLF(cam.vel);
+            const float v_dot_x = V * x_rel;
+            const float scale = (LF_cam - 1.0f) * v_dot_x / V2 - LF_cam * t_ret;
             x_new = x_rel + V * scale;
         } else {
             x_new = x_rel;
         }
 
-        return {
-            static_cast<float>(x_new[0]),
-            static_cast<float>(x_new[1]),
-            static_cast<float>(x_new[2])
-        };
+        return x_new;
     }
 
-    FrameState getState(const double t_ret) {
+    FrameState getState(const float t_ret) {
         const int lower_t = std::floor(t_ret * fps);
         const int upper_t = std::ceil(t_ret * fps);
 

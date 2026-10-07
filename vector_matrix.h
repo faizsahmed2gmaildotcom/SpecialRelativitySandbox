@@ -4,6 +4,62 @@
 #include <cmath>
 #include <ranges>
 
+template<typename T>
+class List {
+    T *contents;
+    unsigned mem_size;
+    unsigned head;
+
+    void autoExtend() {
+        if (head == mem_size) {
+            const unsigned new_mem_size = mem_size > 0 ? mem_size * 2 : 1;
+            reserve(new_mem_size);
+        }
+    }
+
+public:
+    List() : contents(nullptr), mem_size(0), head(0) {
+    }
+
+    ~List() {
+        delete[] contents;
+    }
+
+    T *begin() {
+        return contents;
+    }
+
+    T *end() {
+        return contents + head;
+    }
+
+    void reserve(const unsigned new_mem_size) {
+        if (new_mem_size == mem_size) return;
+
+        T *new_contents = new T[new_mem_size]{};
+        for (int i = 0; i < mem_size; i++) new_contents[i] = contents[i];
+
+        delete[] contents;
+        contents = new_contents;
+        mem_size = new_mem_size;
+    }
+
+    void resize(const unsigned new_size) {
+        reserve(new_size);
+        head = new_size;
+    }
+
+    void append(T &&item) {
+        autoExtend();
+        contents[head++] = std::move(item);
+    }
+
+    void append(const T &item) {
+        autoExtend();
+        contents[head++] = item;
+    }
+};
+
 template<typename T, typename... Args>
 concept ArgsType = (std::same_as<Args, T> and ...);
 

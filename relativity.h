@@ -161,13 +161,17 @@ struct VtxRefFrame {
             x_new = x_rel;
         }
 
-        return {static_cast<float>(x_new[0]), static_cast<float>(x_new[1]), static_cast<float>(x_new[2])};
+        return {
+            static_cast<float>(x_new[0]),
+            static_cast<float>(x_new[1]),
+            static_cast<float>(x_new[2])
+        };
     }
 
     FrameState getState(const double t_ret) {
         const int lower_t = std::floor(t_ret * fps);
         const int upper_t = std::ceil(t_ret * fps);
-        // std::cout << lower_t << " | " << upper_t << "\n";
+
         if (lower_t < -MAX_PAST_TIME * fps) return INVALID_FRAME; // Outside view distance
         const vec3 state_pos = history[lower_t].pos.interpolate(history[upper_t].pos);
         const vec3 state_vel = history[lower_t].vel.interpolate(history[upper_t].vel);

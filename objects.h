@@ -4,7 +4,7 @@
 #include "relativity.h"
 
 struct GlobalVertices {
-    std::vector<Array<float, 3> > optical_vtc; // float instead of float for GPU rendering
+    std::vector<Array<float, 3> > optical_vtc; // double instead of double for GPU rendering
     tris triangle_opt; // Optical tris
 
     std::vector<VtxRefFrame> world_vtc;
@@ -107,7 +107,7 @@ public:
         std::cout << '\n';
     }
 
-    void process(const float dt, const CamRefFrame &cam, GlobalVertices &global_dat) {
+    void process(const double dt, const CamRefFrame &cam, GlobalVertices &global_dat) {
         main_frame.process(dt);
         updateWorldVtc(global_dat);
 
@@ -117,7 +117,7 @@ public:
             world_vtx.saveState();
 
             if (world_vtx.optical_idx != -1) {
-                const float t_ret = world_vtx.tRet(cam);
+                const double t_ret = world_vtx.tRet(cam);
                 global_dat.optical_vtc[world_vtx.optical_idx] = world_vtx.getOptPos(cam, t_ret);
             }
         }

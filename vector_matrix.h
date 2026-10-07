@@ -186,8 +186,8 @@ public:
 template<typename T, int n>
 std::ostream &operator<<(std::ostream &os, const Array<T, n> &vec) {
     os << '[';
-    for (const double d: vec | std::ranges::views::take(n - 1)) {
-        os << d << ", ";
+    for (const T &val: vec | std::ranges::views::take(n - 1)) {
+        os << val << ", ";
     }
     os << vec[n - 1] << ']';
     return os;
